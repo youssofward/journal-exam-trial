@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal Exam — Trial Run</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F1E6;
+    --ink:#232620;
+    --ink-soft:#5B5C52;
+    --forest:#1F3B2E;
+    --forest-light:#2E5541;
+    --sage:#C7D2BE;
+    --amber:#C0742A;
+    --amber-soft:#EADFC8;
+    --red:#A8402F;
+    --rule:#D8D0BC;
+    --shadow: 2px 2px 0 rgba(31,59,46,0.08);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 42px;
+    background-attachment: local;
+  }
+  .margin-line{
+    position:fixed; top:0; bottom:0; left:64px;
+    width:2px; background:rgba(168,64,47,0.18);
+    pointer-events:none;
+  }
+  @media (max-width:640px){ .margin-line{ display:none; } }
+
+  header.top{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px;
+    background:var(--forest);
+    color:var(--paper);
+    box-shadow:0 2px 0 rgba(0,0,0,0.15);
+  }
+  header.top .brand{
+    font-family:'Lora', serif; font-weight:600; font-size:1.05rem;
+    letter-spacing:0.01em;
+  }
+  header.top .brand small{
+    display:block; font-family:'IBM Plex Sans',sans-serif; font-weight:400;
+    font-size:0.72rem; color:var(--sage); margin-top:2px;
+  }
+  #timer{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1.4rem; font-weight:500;
+    background:var(--forest-light);
+    padding:6px 16px; border-radius:3px;
+    letter-spacing:0.03em;
+    min-width:110px; text-align:center;
+    border:1px solid rgba(255,255,255,0.12);
+  }
+  #timer.warn{ background:var(--amber); color:#231a0d; }
+  #timer.danger{ background:var(--red); color:var(--paper); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:0.6; } }
+
+  main{
+    max-width:760px; margin:0 auto; padding:40px 28px 100px;
+  }
+
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+
+  h1{
+    font-family:'Lora', serif; font-weight:600;
+    font-size:1.9rem; line-height:1.25; margin:0 0 6px;
+    color:var(--forest);
+  }
+  .sub{ color:var(--ink-soft); margin:0 0 32px; font-size:0.98rem; }
+
+  .card{
+    background:#FBF9F2;
+    border:1px solid var(--rule);
+    border-left:4px solid var(--forest);
+    padding:24px 26px;
+    margin-bottom:24px;
+    box-shadow:var(--shadow);
+  }
+
+  label{
+    display:block; font-weight:600; font-size:0.85rem;
+    color:var(--forest); margin-bottom:6px;
+  }
+  input[type=text], input[type=email]{
+    width:100%; font-family:inherit; font-size:1rem;
+    padding:10px 12px; border:1px solid var(--rule);
+    background:#fff; color:var(--ink); border-radius:2px;
+  }
+  input[type=text]:focus, input[type=email]:focus, textarea:focus{
+    outline:2px solid var(--forest-light); outline-offset:1px;
+  }
+  .field{ margin-bottom:18px; }
+  .field-row{ display:flex; gap:16px; flex-wrap:wrap; }
+  .field-row .field{ flex:1; min-width:220px; }
+
+  .rules{ margin:0; padding-left:20px; color:var(--ink-soft); font-size:0.94rem; line-height:1.7; }
+
+  button{
+    font-family:'IBM Plex Sans', sans-serif; font-weight:600;
+    font-size:1rem; cursor:pointer; border:none; border-radius:3px;
+    padding:13px 26px;
+  }
+  .btn-primary{ background:var(--forest); color:var(--paper); }
+  .btn-primary:hover{ background:var(--forest-light); }
+  .btn-primary:disabled{ background:#9AA79E; cursor:not-allowed; }
+
+  .q-label{
+    font-family:'Lora', serif; font-weight:600; font-size:1.15rem;
+    color:var(--forest); margin-bottom:4px;
+  }
+  .q-tag{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.72rem;
+    color:var(--forest); background:var(--sage); padding:2px 8px; border-radius:2px;
+    margin-bottom:10px; letter-spacing:0.03em;
+  }
+  .q-prompt{ font-size:1rem; line-height:1.55; margin:0 0 14px; color:var(--ink); }
+  textarea{
+    width:100%; min-height:150px; font-family:inherit; font-size:1rem;
+    line-height:1.6; padding:12px 14px; border:1px solid var(--rule);
+    resize:vertical; background:#fff; color:var(--ink); border-radius:2px;
+  }
+  .counter{
+    display:flex; justify-content:flex-end; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.82rem;
+    color:var(--ink-soft); margin-top:6px;
+  }
+  .counter.over{ color:var(--red); font-weight:600; }
+
+  .footer-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:8px;
+  }
+  .hint{ color:var(--ink-soft); font-size:0.88rem; }
+
+  #status{ font-size:0.92rem; margin-top:14px; }
+  #status.error{ color:var(--red); }
+  #status.ok{ color:var(--forest); }
+
+  .done-card{ text-align:center; padding:50px 26px; }
+  .done-card h1{ margin-bottom:10px; }
+
+  footer.note{
+    max-width:760px; margin:0 auto; padding:0 28px 40px;
+    color:var(--ink-soft); font-size:0.82rem;
+  }
+</style>
+</head>
+<body>
+<div class="margin-line"></div>
+
+<header class="top">
+  <div class="brand">Journal Exam — Trial Run
+    <small id="headerSub">STEM School · Practice for G10</small>
+  </div>
+  <div id="timer">60:00</div>
+</header>
+
+<main>
+
+  <!-- SCREEN 1: START -->
+  <section class="screen active" id="screen-start">
+    <h1>Before you begin</h1>
+    <p class="sub">This is a practice run of the journal exam. It's timed and graded the same way as the real one, so treat it like the real thing.</p>
+
+    <div class="card">
+      <div class="field-row">
+        <div class="field">
+          <label for="studentName">Full name</label>
+          <input type="text" id="studentName" placeholder="e.g. Youssef Ahmed" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="studentEmail">Email</label>
+          <input type="email" id="studentEmail" placeholder="e.g. you@school.edu" autocomplete="email">
+        </div>
+      </div>
+      <p id="startError" class="hint" style="color:var(--red); display:none;">Please enter your name and email before starting.</p>
+    </div>
+
+    <div class="card">
+      <div class="q-tag">Format</div>
+      <ul class="rules">
+        <li>1 hour total, timed automatically — the exam auto-submits when time runs out.</li>
+        <li>3 questions: Personal Reflection / Team Collaboration, Engineering Design Process (EDP), and a Connection to a Learning Outcome.</li>
+        <li>250 words maximum per question (750 words total).</li>
+        <li>Once you click "Start exam," the timer begins immediately.</li>
+      </ul>
+    </div>
+
+    <button class="btn-primary" id="startBtn">Start exam</button>
+  </section>
+
+  <!-- SCREEN 2: EXAM -->
+  <section class="screen" id="screen-exam">
+    <h1>Trial Journal Exam</h1>
+    <p class="sub">Answer all three questions below. Word counters update as you type.</p>
+
+    <div class="card">
+      <div class="q-tag">Question 1 · Personal Reflection / Team Collaboration</div>
+      <p class="q-prompt">How would you describe your personal perception of the educational system implemented in STEM schools?</p>
+      <textarea id="q1" maxlength="4000" placeholder="Write your answer here..."></textarea>
+      <div class="counter" id="q1counter">0 / 250 words</div>
+    </div>
+
+    <div class="card">
+      <div class="q-tag">Question 2 · Engineering Design Process (EDP)</div>
+      <p class="q-prompt">Develop a comprehensive three-year plan detailing your academic goals, research interests, and personal development objectives throughout your studies at the STEM school.</p>
+      <textarea id="q2" maxlength="4000" placeholder="Write your answer here..."></textarea>
+      <div class="counter" id="q2counter">0 / 250 words</div>
+    </div>
+
+    <div class="card">
+      <div class="q-tag" id="q3tag">Question 3 · Connection to a Learning Outcome</div>
+      <p class="q-prompt" id="q3prompt"></p>
+      <textarea id="q3" maxlength="4000" placeholder="Write your answer here..."></textarea>
+      <div class="counter" id="q3counter">0 / 250 words</div>
+    </div>
+
+    <div class="footer-bar">
+      <span class="hint">Total: <span id="totalCounter">0 / 750</span> words</span>
+      <button class="btn-primary" id="submitBtn">Submit exam</button>
+    </div>
+    <div id="status"></div>
+  </section>
+
+  <!-- SCREEN 3: DONE -->
+  <section class="screen" id="screen-done">
+    <div class="card done-card">
+      <h1>Submitted</h1>
+      <p class="sub">Your answers have been recorded. Your teacher will grade this manually and get back to you.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="note">Practice exam built by a G11 student for G10 journal exam training.</footer>
+
+<script>
+/* ============ CONFIG ============ */
+// Paste your Google Apps Script Web App URL here (see setup instructions).
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk3KzZrWKZBO0rucK1hs7fVAeTUlqfdAYHtNeHaeY-kSigZwX5JTexwUqTHyHqJmgzWg/exec";
+
+// Pool of Learning Outcome questions for Question 3.
+// Add as many as you want — one is picked at random each time a student starts the exam.
+const LEARNING_OUTCOMES = [
+  {
+    code: "LO1.01",
+    prompt: "You have studied the SketchUp program. Select two most important tools in your opinion and explain how you can benefit from them in your capstone project."
+  }
+  // Add more like this:
+  // { code: "LO2.03", prompt: "..." },
+];
+
+const EXAM_SECONDS = 60 * 60; // 1 hour
+const WORD_LIMIT = 250;
+
+/* ============ STATE ============ */
+let timeLeft = EXAM_SECONDS;
+let timerInterval = null;
+let selectedLO = null;
+let studentName = "";
+let studentEmail = "";
+let startedAt = null;
+let submitted = false;
+
+/* ============ HELPERS ============ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function countWords(text){
+  const trimmed = text.trim();
+  if(!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+function formatTime(totalSeconds){
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+}
+
+function updateCounter(textareaId, counterId){
+  const val = document.getElementById(textareaId).value;
+  const words = countWords(val);
+  const el = document.getElementById(counterId);
+  el.textContent = words + " / " + WORD_LIMIT + " words";
+  el.classList.toggle('over', words > WORD_LIMIT);
+  updateTotal();
+}
+
+function updateTotal(){
+  const w1 = countWords(document.getElementById('q1').value);
+  const w2 = countWords(document.getElementById('q2').value);
+  const w3 = countWords(document.getElementById('q3').value);
+  const total = w1 + w2 + w3;
+  const el = document.getElementById('totalCounter');
+  el.textContent = total + " / 750";
+  el.parentElement.style.color = total > 750 ? "var(--red)" : "";
+}
+
+/* ============ TIMER ============ */
+function startTimer(){
+  const timerEl = document.getElementById('timer');
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = formatTime(Math.max(timeLeft,0));
+    timerEl.classList.toggle('warn', timeLeft <= 300 && timeLeft > 60);
+    timerEl.classList.toggle('danger', timeLeft <= 60);
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      submitExam(true);
+    }
+  }, 1000);
+}
+
+/* ============ FLOW ============ */
+document.getElementById('startBtn').addEventListener('click', () => {
+  const nameVal = document.getElementById('studentName').value.trim();
+  const emailVal = document.getElementById('studentEmail').value.trim();
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+
+  if(!nameVal || !emailOk){
+    document.getElementById('startError').style.display = 'block';
+    return;
+  }
+  document.getElementById('startError').style.display = 'none';
+
+  studentName = nameVal;
+  studentEmail = emailVal;
+  startedAt = new Date();
+
+  // pick random LO
+  selectedLO = LEARNING_OUTCOMES[Math.floor(Math.random() * LEARNING_OUTCOMES.length)];
+  document.getElementById('q3tag').textContent = "Question 3 · Connection to a Learning Outcome (" + selectedLO.code + ")";
+  document.getElementById('q3prompt').textContent = selectedLO.prompt;
+
+  showScreen('screen-exam');
+  document.getElementById('headerSub').textContent = studentName;
+  startTimer();
+});
+
+['q1','q2','q3'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => updateCounter(id, id + 'counter'));
+});
+
+document.getElementById('submitBtn').addEventListener('click', () => submitExam(false));
+
+function submitExam(auto){
+  if(submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+
+  const statusEl = document.getElementById('status');
+  document.getElementById('submitBtn').disabled = true;
+  statusEl.className = '';
+  statusEl.textContent = auto ? "Time's up — submitting your answers..." : "Submitting your answers...";
+
+  const payload = {
+    name: studentName,
+    email: studentEmail,
+    startedAt: startedAt ? startedAt.toISOString() : "",
+    submittedAt: new Date().toISOString(),
+    autoSubmitted: auto,
+    q1_prompt: "Personal Reflection/Team Collaboration",
+    q1_answer: document.getElementById('q1').value,
+    q1_words: countWords(document.getElementById('q1').value),
+    q2_prompt: "Engineering Design Process (EDP) — 3 year plan",
+    q2_answer: document.getElementById('q2').value,
+    q2_words: countWords(document.getElementById('q2').value),
+    q3_lo_code: selectedLO ? selectedLO.code : "",
+    q3_prompt: selectedLO ? selectedLO.prompt : "",
+    q3_answer: document.getElementById('q3').value,
+    q3_words: countWords(document.getElementById('q3').value)
+  };
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors", // Apps Script web apps don't return CORS headers; we can't read the response, but the request still goes through
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    statusEl.className = 'ok';
+    statusEl.textContent = "Saved. Redirecting...";
+    setTimeout(() => showScreen('screen-done'), 600);
+  })
+  .catch(() => {
+    statusEl.className = 'error';
+    statusEl.textContent = "Couldn't reach the server. Check your internet connection and click Submit again.";
+    document.getElementById('submitBtn').disabled = false;
+    submitted = false;
+  });
+}
+</script>
+</body>
+</html>
